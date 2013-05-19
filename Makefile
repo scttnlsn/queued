@@ -19,4 +19,7 @@ install: build/kew
 uninstall:
 	rm ${BINDIR}/kew
 
-.PHONY: install uninstall clean all
+test:
+	cd kew; go test
+
+.PHONY: install uninstall clean all test

@@ -57,8 +57,7 @@ func (q *Queue) Dequeue(wait time.Duration, timeout time.Duration) (*Item, bool)
 
 func (q *Queue) SetTimeout(item *Item, timeout time.Duration) {
 	if timeout == NilDuration {
-		// Default 30s timeout
-		timeout = time.Second * 30
+		return
 	}
 
 	expired := time.After(timeout)

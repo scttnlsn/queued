@@ -42,7 +42,7 @@ func TestServer(t *testing.T) {
 	assert.Equal(t, w.Code, 404)
 
 	// Dequeue
-	req, _ = http.NewRequest("GET", "/foo/head?wait=30", nil)
+	req, _ = http.NewRequest("GET", "/foo/head?wait=30&timeout=30", nil)
 	w = httptest.NewRecorder()
 	s.ServeHTTP(w, req)
 

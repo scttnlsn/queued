@@ -19,7 +19,7 @@ Run:
     $ curl -X POST http://localhost:5353/queue -d 'foo'
 
     # Dequeue item
-    $ curl -X GET http://localhost:5353/queue/head?wait=30&timeout=30
+    $ curl -X GET http://localhost:5353/queue/head
 
     # Get item info
     $ curl -X GET http://localhost:5353/queue/:id

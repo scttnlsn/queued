@@ -63,6 +63,10 @@ func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if item, ok := q.Dequeue(wait, timeout); ok {
+		if timeout == NilDuration {
+			s.Store.Remove(item.id)
+		}
+
 		send(w, Json{"id": item.id, "value": item.value})
 	} else {
 		w.WriteHeader(http.StatusNotFound)
