@@ -37,7 +37,7 @@ Dequeue optionally takes `wait` and/or `timeout` query string parameters:
 * `wait=<sec>` - block for the specified number of seconds or until there is an item to be read
 off the head of the queue
 
-* `timeout=<sec>` - if the item is not completed (see endpoint below) within the specified number of seconds, the item will automatically be re-enqueued (by default, the item is automatically completed when dequeued)
+* `timeout=<sec>` - if the item is not completed (see endpoint below) within the specified number of seconds, the item will automatically be re-enqueued (when no timeout is specified the item is automatically completed when dequeued)
 
 **Info:**
 
