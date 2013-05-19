@@ -16,4 +16,7 @@ install: build/kew
 	install -m 755 -d ${BINDIR}
 	install -m 755 build/kew ${BINDIR}/kew
 
-.PHONY: install clean all
+uninstall:
+	rm ${BINDIR}/kew
+
+.PHONY: install uninstall clean all
