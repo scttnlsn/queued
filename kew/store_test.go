@@ -7,7 +7,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	store := NewStore("./test1.db")
+	store := NewStore("./test1.db", true)
 	defer store.Drop()
 
 	item := NewItem("foo")
@@ -28,7 +28,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestStoreConcurrency(t *testing.T) {
-	store := NewStore("./test2.db")
+	store := NewStore("./test2.db", true)
 	defer store.Drop()
 
 	done := make(chan bool)
@@ -56,11 +56,11 @@ func TestStoreLoad(t *testing.T) {
 	item := NewItem("foo")
 	item.queue = q.Name
 
-	temp := NewStore("./test3.db")
+	temp := NewStore("./test3.db", true)
 	temp.Put(item)
 	temp.Close()
 
-	store := NewStore("./test3.db")
+	store := NewStore("./test3.db", true)
 	defer store.Drop()
 
 	store.Load()

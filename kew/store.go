@@ -11,13 +11,14 @@ import (
 
 type Store struct {
 	path  string
+	sync  bool
 	db    *levigo.DB
 	items map[int]*Item
 	mutex sync.Mutex
 	id    int
 }
 
-func NewStore(path string) *Store {
+func NewStore(path string, sync bool) *Store {
 	opts := levigo.NewOptions()
 	opts.SetCreateIfMissing(true)
 
@@ -26,7 +27,12 @@ func NewStore(path string) *Store {
 		panic(fmt.Sprintf("kew.Store: Unable to open db: %v", err))
 	}
 
-	store := &Store{path: path, db: db, items: map[int]*Item{}}
+	store := &Store{
+		path:  path,
+		sync:  sync,
+		db:    db,
+		items: map[int]*Item{},
+	}
 
 	return store
 }
@@ -78,7 +84,7 @@ func (s *Store) Put(item *Item) {
 	}
 
 	wopts := levigo.NewWriteOptions()
-	wopts.SetSync(true)
+	wopts.SetSync(s.sync)
 	s.db.Put(wopts, key, bytes)
 
 	s.items[item.id] = item
@@ -92,7 +98,7 @@ func (s *Store) Remove(id int) {
 	key := []byte(fmt.Sprintf("%d", id))
 
 	wopts := levigo.NewWriteOptions()
-	wopts.SetSync(true)
+	wopts.SetSync(s.sync)
 	s.db.Delete(wopts, key)
 
 	delete(s.items, id)

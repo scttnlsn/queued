@@ -16,7 +16,7 @@ type Server struct {
 
 func NewServer(config *Config) *Server {
 	router := mux.NewRouter()
-	store := NewStore(config.DbPath)
+	store := NewStore(config.DbPath, config.Sync)
 	addr := fmt.Sprintf(":%d", config.Port)
 
 	s := &Server{config, router, store, addr}
