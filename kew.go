@@ -7,11 +7,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 )
 
 func main() {
 	flag.Parse()
 	path := flag.Arg(0)
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	config := kew.NewConfig()
 
