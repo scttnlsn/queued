@@ -2,35 +2,26 @@ package main
 
 import (
 	"./kew"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"runtime"
 )
 
+var config *kew.Config
+
+func init() {
+	config = kew.NewConfig()
+
+	flag.UintVar(&config.Port, "port", 5353, "port on which to listen")
+	flag.StringVar(&config.Auth, "auth", "", "HTTP basic auth password required for all requests")
+	flag.StringVar(&config.DbPath, "db-path", "./kew.db", "the directory in which queue items will be persisted")
+	flag.BoolVar(&config.Sync, "sync", true, "boolean indicating whether data should be synced to disk after every write")
+}
+
 func main() {
 	flag.Parse()
-	path := flag.Arg(0)
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	config := kew.NewConfig()
-
-	// Load config
-	if path != "" {
-		file, err := ioutil.ReadFile(path)
-		if err != nil {
-			panic(fmt.Sprintf("kew: Error reading config file: %v", err))
-			os.Exit(1)
-		}
-
-		err = json.Unmarshal(file, &config)
-		if err != nil {
-			panic(fmt.Sprintf("kew: Error parsing config file: %v", err))
-		}
-	}
 
 	s := kew.NewServer(config)
 	s.Store.Load()

@@ -8,10 +8,5 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return &Config{
-		Port:   5353,
-		Auth:   "",
-		DbPath: "./kew.db",
-		Sync:   true,
-	}
+	return &Config{}
 }
