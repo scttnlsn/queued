@@ -26,9 +26,9 @@ Append the POSTed data to the end of the specified queue (note that queues are c
 
 **Dequeue:**
 
-    $ curl -X GET http://localhost:5353/:queue/head
+    $ curl -X POST http://localhost:5353/:queue/dequeue
 
-Get the item currently on the head of the queue.  Guaranteed not to return the same item twice unless a completion timeout is specified (see below).  Returns a JSON response of the form:
+Dequeue the item currently on the head of the queue.  Guaranteed not to return the same item twice unless a completion timeout is specified (see below).  Returns a JSON response of the form:
 
     { "id": 123, "value": "foo" }
 

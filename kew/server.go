@@ -22,7 +22,7 @@ func NewServer(config *Config) *Server {
 	s := &Server{config, router, store, addr}
 
 	s.HandleFunc("/{queue}", s.EnqueueHandler).Methods("POST")
-	s.HandleFunc("/{queue}/head", s.DequeueHandler).Methods("GET")
+	s.HandleFunc("/{queue}/dequeue", s.DequeueHandler).Methods("POST")
 	s.HandleFunc("/{queue}/{id}", s.InfoHandler).Methods("GET")
 	s.HandleFunc("/{queue}/{id}", s.CompleteHandler).Methods("DELETE")
 
