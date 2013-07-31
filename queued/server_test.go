@@ -53,7 +53,7 @@ func TestServer(t *testing.T) {
 	w = httptest.NewRecorder()
 	s.ServeHTTP(w, req)
 
-	assert.Equal(t, w.Code, 200)
+	assert.Equal(t, w.Code, 204)
 
 	// Info not found
 	req, _ = http.NewRequest("GET", "/foo/1", nil)

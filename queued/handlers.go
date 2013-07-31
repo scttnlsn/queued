@@ -3,6 +3,7 @@ package queued
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
@@ -39,8 +40,8 @@ func (s *Server) EnqueueHandler(w http.ResponseWriter, req *http.Request) {
 
 	go q.Enqueue(item)
 
+	w.Header().Set("Location", url(req, item))
 	w.WriteHeader(http.StatusCreated)
-	send(w, Json{"id": item.id, "value": item.value})
 }
 
 func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
@@ -67,10 +68,10 @@ func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
 			s.Store.Remove(item.id)
 		}
 
-		send(w, Json{"id": item.id, "value": item.value})
+		w.Header().Set("Location", url(req, item))
+		fmt.Fprintf(w, "%s", item.value)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
-		send(w, Json{"id": nil})
 	}
 }
 
@@ -119,11 +120,11 @@ func (s *Server) CompleteHandler(w http.ResponseWriter, req *http.Request) {
 
 	if ok {
 		s.Store.Remove(item.id)
+		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
+		send(w, Json{"error": "Item not dequeued"})
 	}
-
-	send(w, Json{"ok": ok})
 }
 
 // Helpers
@@ -189,4 +190,8 @@ func auth(req *http.Request, config *Config) bool {
 	}
 
 	return true
+}
+
+func url(req *http.Request, item *Item) string {
+	return fmt.Sprintf("http://%s/%s/%d", req.Host, item.queue, item.id)
 }
