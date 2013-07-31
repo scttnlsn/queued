@@ -1,25 +1,25 @@
 PREFIX=/usr/local
 BINDIR=${PREFIX}/bin
 
-all: build/kew
+all: build/queued
 
 build:
 	mkdir build
 
-build/kew: build
-	go build -o build/kew
+build/queued: build
+	go build -o build/queued
 
 clean:
 	rm -rf build
 
-install: build/kew
+install: build/queued
 	install -m 755 -d ${BINDIR}
-	install -m 755 build/kew ${BINDIR}/kew
+	install -m 755 build/queued ${BINDIR}/queued
 
 uninstall:
-	rm ${BINDIR}/kew
+	rm ${BINDIR}/queued
 
 test:
-	cd kew; go test
+	cd queued; go test
 
 .PHONY: install uninstall clean all test

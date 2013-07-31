@@ -1,4 +1,4 @@
-package kew
+package queued
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ func NewStore(path string, sync bool) *Store {
 
 	db, err := levigo.Open(path, opts)
 	if err != nil {
-		panic(fmt.Sprintf("kew.Store: Unable to open db: %v", err))
+		panic(fmt.Sprintf("queued.Store: Unable to open db: %v", err))
 	}
 
 	store := &Store{
@@ -51,7 +51,7 @@ func (s *Store) LastId() int {
 	if it.Valid() {
 		key, err := strconv.Atoi(string(it.Key()))
 		if err != nil {
-			panic(fmt.Sprintf("kew.Store: Error parsing last id from db: %v", err))
+			panic(fmt.Sprintf("queued.Store: Error parsing last id from db: %v", err))
 		}
 		id = key
 	}
@@ -80,7 +80,7 @@ func (s *Store) Put(item *Item) {
 	bytes, err := json.Marshal(data)
 
 	if err != nil {
-		panic(fmt.Sprintf("kew.Store: Error marshalling item: %v", err))
+		panic(fmt.Sprintf("queued.Store: Error marshalling item: %v", err))
 	}
 
 	wopts := levigo.NewWriteOptions()
@@ -113,7 +113,7 @@ func (s *Store) Drop() {
 
 	err := os.RemoveAll(s.path)
 	if err != nil {
-		panic(fmt.Sprintf("kew.Store: Error dropping db: %v", err))
+		panic(fmt.Sprintf("queued.Store: Error dropping db: %v", err))
 	}
 }
 
@@ -130,14 +130,14 @@ func (s *Store) Load() {
 
 		id, err := strconv.Atoi(string(it.Key()))
 		if err != nil {
-			panic(fmt.Sprintf("kew: Error loading db: %v", err))
+			panic(fmt.Sprintf("queued: Error loading db: %v", err))
 		}
 
 		data := make(map[string]string)
 
 		err = json.Unmarshal(it.Value(), &data)
 		if err != nil {
-			panic(fmt.Sprintf("kew: Error loading db: %v", err))
+			panic(fmt.Sprintf("queued: Error loading db: %v", err))
 		}
 
 		item := NewItem(data["value"])

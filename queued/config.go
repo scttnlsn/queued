@@ -1,4 +1,4 @@
-package kew
+package queued
 
 type Config struct {
 	Port   uint
