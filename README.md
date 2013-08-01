@@ -22,15 +22,13 @@ Ensure Go and LevelDB are installed and then run:
 
     $ curl -X POST http://localhost:5353/:queue -d 'foo'
 
-Append the POSTed data to the end of the specified queue (note that queues are created on-the-fly).
+Append the POSTed data to the end of the specified queue (note that queues are created on-the-fly).  The `Location` header will point to the enqueued item and is of the form `http://localhost:5353/:queue/:id`.
 
 **Dequeue:**
 
     $ curl -X POST http://localhost:5353/:queue/dequeue
 
-Dequeue the item currently on the head of the queue.  Guaranteed not to return the same item twice unless a completion timeout is specified (see below).  Returns a JSON response of the form:
-
-    { "id": 123, "value": "foo" }
+Dequeue the item currently on the head of the queue.  Guaranteed not to return the same item twice unless a completion timeout is specified (see below).  The `Location` header will point to the dequeued item and is of the form `http://localhost:5353/:queue/:id`.  Queued message data is returned in the response body.
 
 Dequeue optionally takes `wait` and/or `timeout` query string parameters:
 
