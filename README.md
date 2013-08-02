@@ -55,3 +55,7 @@ Complete the specified item and destroy it (note that only items dequeued with a
 * **-db-path="./queued.db"** - the directory in which queue items will be persisted
 * **-port=5353** - port on which to listen
 * **-sync=true** - boolean indicating whether data should be synced to disk after every write (see LevelDB's `WriteOptions::sync`)
+
+## Client Libraries
+
+* [Node.js](http://github.com/scttnlsn/node-queued)
