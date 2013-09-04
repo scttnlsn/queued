@@ -68,7 +68,7 @@ func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
 
 	if record != nil {
 		w.Header().Set("Location", url(req, record))
-		fmt.Fprintf(w, "%s", record.Value)
+		w.Write(record.Value)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -98,7 +98,7 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("X-Dequeued", dequeued)
-		fmt.Fprintf(w, "%s", info.value)
+		w.Write(info.value)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		send(w, Json{"error": "Item not found"})
@@ -163,6 +163,7 @@ func send(w http.ResponseWriter, data Json) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Foo", "bar")
 	w.Write(bytes)
 
 	return nil
