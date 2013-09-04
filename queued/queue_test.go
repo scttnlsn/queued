@@ -6,54 +6,57 @@ import (
 	"time"
 )
 
-func TestNewQueue(t *testing.T) {
-	q := NewQueue("q1")
-	assert.Equal(t, Queues["q1"], q)
-	assert.Equal(t, NewQueue("q1"), q)
+func TestQueue(t *testing.T) {
+	q := NewQueue()
+	defer q.Stop()
+
+	q.Enqueue(123)
+	q.Enqueue(456)
+
+	one := q.Dequeue(NilDuration, NilDuration)
+	assert.Equal(t, one.value, 123)
+
+	two := q.Dequeue(NilDuration, NilDuration)
+	assert.Equal(t, two.value, 456)
 }
 
-func TestEnqueue(t *testing.T) {
-	q := NewQueue("q2")
-	item := NewItem("foo")
+func TestDequeueWait(t *testing.T) {
+	q := NewQueue()
+	defer q.Stop()
 
-	go q.Enqueue(item)
-	<-q.Items
+	wait := time.Millisecond
 
-	assert.Equal(t, item.dequeued, false)
-	assert.Equal(t, item.queue, "q2")
-}
+	go func() {
+		time.Sleep(wait)
+		q.Enqueue(123)
+	}()
 
-func TestDequeueNonBlocking(t *testing.T) {
-	q := NewQueue("q3")
+	one := q.Dequeue(NilDuration, NilDuration)
+	assert.T(t, one == nil)
 
-	_, ok := q.Dequeue(NilDuration, NilDuration)
-	assert.Equal(t, ok, false)
-
-	go q.Enqueue(NewItem("foo"))
-	time.Sleep(time.Millisecond)
-
-	item, ok := q.Dequeue(NilDuration, NilDuration)
-	assert.Equal(t, item.value, "foo")
-	assert.Equal(t, ok, true)
-}
-
-func TestDequeueBlocking(t *testing.T) {
-	q := NewQueue("q4")
-	go q.Enqueue(NewItem("foo"))
-
-	item, ok := q.Dequeue(time.Hour, NilDuration)
-	assert.Equal(t, item.value, "foo")
-	assert.Equal(t, ok, true)
+	two := q.Dequeue(time.Second, NilDuration)
+	assert.Equal(t, two.value, 123)
 }
 
 func TestDequeueTimeout(t *testing.T) {
-	q := NewQueue("q5")
-	item := NewItem("foo")
+	q := NewQueue()
+	defer q.Stop()
 
-	go q.Enqueue(item)
-	q.Dequeue(time.Hour, time.Millisecond)
+	timeout := time.Millisecond
 
-	assert.Equal(t, item.dequeued, true)
-	time.Sleep(time.Millisecond * 2)
-	assert.Equal(t, item.dequeued, false)
+	q.Enqueue(123)
+
+	one := q.Dequeue(NilDuration, timeout)
+	assert.T(t, one != nil)
+
+	time.Sleep(timeout)
+
+	two := q.Dequeue(NilDuration, timeout)
+	assert.T(t, two != nil)
+
+	two.Complete()
+	time.Sleep(timeout)
+
+	three := q.Dequeue(NilDuration, NilDuration)
+	assert.T(t, three == nil)
 }

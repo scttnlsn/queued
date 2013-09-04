@@ -11,15 +11,17 @@ type Server struct {
 	Config *Config
 	Router *mux.Router
 	Store  *Store
+	App    *Application
 	Addr   string
 }
 
 func NewServer(config *Config) *Server {
 	router := mux.NewRouter()
 	store := NewStore(config.DbPath, config.Sync)
+	app := NewApplication(store)
 	addr := fmt.Sprintf(":%d", config.Port)
 
-	s := &Server{config, router, store, addr}
+	s := &Server{config, router, store, app, addr}
 
 	s.HandleFunc("/{queue}", s.EnqueueHandler).Methods("POST")
 	s.HandleFunc("/{queue}/dequeue", s.DequeueHandler).Methods("POST")

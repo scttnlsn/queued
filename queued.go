@@ -24,7 +24,6 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	s := queued.NewServer(config)
-	s.Store.Load()
 
 	err := s.ListenAndServe()
 	if err != nil {

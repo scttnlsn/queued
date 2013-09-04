@@ -3,71 +3,72 @@ package queued
 import (
 	"github.com/bmizerany/assert"
 	"testing"
-	"time"
 )
 
 func TestStore(t *testing.T) {
 	store := NewStore("./test1.db", true)
 	defer store.Drop()
 
-	item := NewItem("foo")
-	store.Put(item)
+	assert.Equal(t, store.id, 0)
 
-	id := item.id
+	record := NewRecord([]byte("foo"), "testqueue")
 
-	result, ok := store.Get(id)
+	err := store.Put(record)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, record.id, 1)
 
-	assert.Equal(t, ok, true)
-	assert.Equal(t, result, item)
+	record, err = store.Get(1)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Value, []byte("foo"))
+	assert.Equal(t, record.Queue, "testqueue")
 
-	store.Remove(id)
+	err = store.Remove(1)
+	assert.Equal(t, err, nil)
 
-	result, ok = store.Get(id)
-
-	assert.Equal(t, ok, false)
-}
-
-func TestStoreConcurrency(t *testing.T) {
-	store := NewStore("./test2.db", true)
-	defer store.Drop()
-
-	done := make(chan bool)
-
-	put := func() {
-		item := NewItem("foo")
-		store.Put(item)
-		done <- true
-	}
-
-	go put()
-	go put()
-	go put()
-
-	<-done
-	<-done
-	<-done
-
-	assert.Equal(t, store.LastId(), 3)
+	record, err = store.Get(1)
+	assert.Equal(t, err, nil)
+	assert.T(t, record == nil)
 }
 
 func TestStoreLoad(t *testing.T) {
-	q := NewQueue("test_store_load")
+	temp := NewStore("./test2.db", true)
+	temp.Put(NewRecord([]byte("foo"), "testqueue"))
+	temp.Put(NewRecord([]byte("bar"), "testqueue"))
+	temp.Close()
 
-	item := NewItem("foo")
-	item.queue = q.Name
+	store := NewStore("./test2.db", true)
+	defer store.Drop()
 
+	assert.Equal(t, store.id, 2)
+}
+
+func TestStoreIterator(t *testing.T) {
 	temp := NewStore("./test3.db", true)
-	temp.Put(item)
+	temp.Put(NewRecord([]byte("foo"), "testqueue"))
+	temp.Put(NewRecord([]byte("bar"), "testqueue"))
 	temp.Close()
 
 	store := NewStore("./test3.db", true)
 	defer store.Drop()
 
-	store.Load()
+	it := store.Iterator()
 
-	_, ok := store.Get(item.id)
-	assert.Equal(t, ok, true)
+	assert.T(t, it.Valid())
 
-	ret, _ := q.Dequeue(time.Second, NilDuration)
-	assert.Equal(t, ret.id, item.id)
+	one := it.Record()
+	assert.Equal(t, one.id, 1)
+	assert.Equal(t, one.Value, []byte("foo"))
+	assert.Equal(t, one.Queue, "testqueue")
+
+	it.Next()
+
+	two := it.Record()
+	assert.Equal(t, two.id, 2)
+	assert.Equal(t, two.Value, []byte("bar"))
+	assert.Equal(t, two.Queue, "testqueue")
+
+	it.Next()
+
+	assert.T(t, !it.Valid())
 }

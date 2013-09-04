@@ -34,13 +34,6 @@ func TestServer(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
-	// Invalid dequeue (still being enqueued)
-	req, _ = http.NewRequest("POST", "/foo/dequeue", nil)
-	w = httptest.NewRecorder()
-	s.ServeHTTP(w, req)
-
-	assert.Equal(t, w.Code, 404)
-
 	// Dequeue
 	req, _ = http.NewRequest("POST", "/foo/dequeue?wait=30&timeout=30", nil)
 	w = httptest.NewRecorder()

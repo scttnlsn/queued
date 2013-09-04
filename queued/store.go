@@ -1,21 +1,19 @@
 package queued
 
 import (
-	"encoding/json"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"github.com/jmhodges/levigo"
 	"os"
 	"strconv"
-	"sync"
 )
 
 type Store struct {
-	path  string
-	sync  bool
-	db    *levigo.DB
-	items map[int]*Item
-	mutex sync.Mutex
-	id    int
+	path string
+	sync bool
+	db   *levigo.DB
+	id   int
 }
 
 func NewStore(path string, sync bool) *Store {
@@ -27,81 +25,81 @@ func NewStore(path string, sync bool) *Store {
 		panic(fmt.Sprintf("queued.Store: Unable to open db: %v", err))
 	}
 
+	id := 0
+
+	it := db.NewIterator(levigo.NewReadOptions())
+	defer it.Close()
+
+	it.SeekToLast()
+	if it.Valid() {
+		id, err = strconv.Atoi(string(it.Key()))
+		if err != nil {
+			panic(fmt.Sprintf("queued: Error loading db: %v", err))
+		}
+	}
+
 	store := &Store{
-		path:  path,
-		sync:  sync,
-		db:    db,
-		items: map[int]*Item{},
+		id:   id,
+		path: path,
+		sync: sync,
+		db:   db,
 	}
 
 	return store
 }
 
-func (s *Store) LastId() int {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (s *Store) Get(id int) (*Record, error) {
+	ropts := levigo.NewReadOptions()
 
-	it := s.db.NewIterator(levigo.NewReadOptions())
-	defer it.Close()
-
-	it.SeekToLast()
-
-	id := 0
-
-	if it.Valid() {
-		key, err := strconv.Atoi(string(it.Key()))
-		if err != nil {
-			panic(fmt.Sprintf("queued.Store: Error parsing last id from db: %v", err))
-		}
-		id = key
-	}
-
-	return id
-}
-
-func (s *Store) Get(id int) (*Item, bool) {
-	item, ok := s.items[id]
-	return item, ok
-}
-
-func (s *Store) Put(item *Item) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	item.id = s.id + 1
-
-	key := []byte(fmt.Sprintf("%d", item.id))
-
-	data := map[string]string{
-		"value": item.value,
-		"queue": item.queue,
-	}
-
-	bytes, err := json.Marshal(data)
-
+	value, err := s.db.Get(ropts, key(id))
 	if err != nil {
-		panic(fmt.Sprintf("queued.Store: Error marshalling item: %v", err))
+		return nil, err
+	}
+	if value == nil {
+		return nil, nil
+	}
+
+	var record Record
+	buf := bytes.NewBuffer(value)
+	dec := gob.NewDecoder(buf)
+	err = dec.Decode(&record)
+	if err != nil {
+		panic(fmt.Sprintf("queued.Store: Error decoding value: %v", err))
+	}
+
+	record.id = id
+
+	return &record, nil
+}
+
+func (s *Store) Put(record *Record) error {
+	id := s.id + 1
+
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(record)
+	if err != nil {
+		panic(fmt.Sprintf("queued.Store: Error encoding record: %v", err))
 	}
 
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(s.sync)
-	s.db.Put(wopts, key, bytes)
 
-	s.items[item.id] = item
-	s.id += 1
+	err = s.db.Put(wopts, key(id), buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	record.id = id
+	s.id = id
+
+	return nil
 }
 
-func (s *Store) Remove(id int) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	key := []byte(fmt.Sprintf("%d", id))
-
+func (s *Store) Remove(id int) error {
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(s.sync)
-	s.db.Delete(wopts, key)
-
-	delete(s.items, id)
+	return s.db.Delete(wopts, key(id))
 }
 
 func (s *Store) Close() {
@@ -117,37 +115,14 @@ func (s *Store) Drop() {
 	}
 }
 
-func (s *Store) Load() {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	it := s.db.NewIterator(levigo.NewReadOptions())
-	defer it.Close()
-
+func (s *Store) Iterator() *Iterator {
+	it := NewIterator(s.db)
 	it.SeekToFirst()
+	return it
+}
 
-	for it.Valid() {
+// Helpers
 
-		id, err := strconv.Atoi(string(it.Key()))
-		if err != nil {
-			panic(fmt.Sprintf("queued: Error loading db: %v", err))
-		}
-
-		data := make(map[string]string)
-
-		err = json.Unmarshal(it.Value(), &data)
-		if err != nil {
-			panic(fmt.Sprintf("queued: Error loading db: %v", err))
-		}
-
-		item := NewItem(data["value"])
-		item.id = id
-
-		q := NewQueue(data["queue"])
-		go q.Enqueue(item)
-
-		s.items[id] = item
-		s.id = id
-		it.Next()
-	}
+func key(id int) []byte {
+	return []byte(fmt.Sprintf("%d", id))
 }

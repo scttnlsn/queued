@@ -1,26 +1,19 @@
 package queued
 
 type Item struct {
-	id       int
-	value    string
-	queue    string
+	value    int
 	dequeued bool
 	complete chan bool
 }
 
-func NewItem(value string) *Item {
-	complete := make(chan bool)
-	item := &Item{value: value, complete: complete}
-	return item
+func NewItem(value int) *Item {
+	return &Item{
+		value:    value,
+		dequeued: false,
+		complete: make(chan bool),
+	}
 }
 
-func (i *Item) Complete() bool {
-	ok := false
-
-	if i.dequeued {
-		i.complete <- true
-		ok = true
-	}
-
-	return ok
+func (i *Item) Complete() {
+	i.complete <- true
 }

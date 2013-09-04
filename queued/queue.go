@@ -4,68 +4,79 @@ import (
 	"time"
 )
 
-var Queues = map[string]*Queue{}
-
 const NilDuration = time.Duration(-1)
 
 type Queue struct {
-	Name  string
-	Items chan *Item
+	items   []*Item
+	dequeue chan *Reader
+	enqueue chan *Item
+	waiting chan *Item
+	running bool
 }
 
-func NewQueue(name string) *Queue {
-	q, ok := Queues[name]
-	if !ok {
-		q = &Queue{name, make(chan *Item)}
-		Queues[name] = q
+func NewQueue() *Queue {
+	q := &Queue{
+		items:   []*Item{},
+		dequeue: make(chan *Reader),
+		enqueue: make(chan *Item),
+		waiting: make(chan *Item),
+		running: true,
 	}
+
+	go q.run()
+
 	return q
 }
 
-func (q *Queue) Enqueue(item *Item) {
-	item.dequeued = false
-	item.queue = q.Name
-	q.Items <- item
-}
-
-func (q *Queue) Dequeue(wait time.Duration, timeout time.Duration) (*Item, bool) {
-	if wait != NilDuration {
-		// Blocking
-		expired := time.After(wait)
-		select {
-		case <-expired:
-			return nil, false
-		case item := <-q.Items:
-			item.dequeued = true
-			go q.SetTimeout(item, timeout)
-			return item, true
-		}
-	} else {
-		// Nonblocking
-		select {
-		case item := <-q.Items:
-			item.dequeued = true
-			go q.SetTimeout(item, timeout)
-			return item, true
-		default:
-			return nil, false
-		}
-	}
-
-	return nil, false
-}
-
-func (q *Queue) SetTimeout(item *Item, timeout time.Duration) {
-	if timeout == NilDuration {
-		return
-	}
-
-	expired := time.After(timeout)
+func (q *Queue) Enqueue(value int) {
+	item := NewItem(value)
 
 	select {
-	case <-expired:
-		q.Enqueue(item)
-	case <-item.complete:
-		return
+	case q.waiting <- item:
+	default:
+		q.enqueue <- item
+	}
+}
+
+func (q *Queue) Dequeue(wait time.Duration, timeout time.Duration) *Item {
+	reader := NewReader(wait, timeout, q.expire)
+
+	go func() {
+		q.dequeue <- reader
+	}()
+
+	return reader.Receive()
+}
+
+func (q *Queue) Stop() {
+	q.running = false
+}
+
+func (q *Queue) run() {
+	for q.running {
+		select {
+		case item := <-q.enqueue:
+			q.items = append(q.items, item)
+		case reader := <-q.dequeue:
+			if item := q.shift(); item != nil {
+				reader.Send(item)
+			} else {
+				reader.Wait(q.waiting)
+			}
+		}
+	}
+}
+
+func (q *Queue) expire(item *Item) {
+	q.Enqueue(item.value)
+}
+
+func (q *Queue) shift() *Item {
+	if len(q.items) > 0 {
+		item := q.items[0]
+		q.items = q.items[1:]
+		return item
+	} else {
+		return nil
 	}
 }
