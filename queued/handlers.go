@@ -14,8 +14,7 @@ import (
 
 func (s *Server) BeforeHandler(w http.ResponseWriter, req *http.Request) bool {
 	if ok := auth(req, s.Config); !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		send(w, Json{"error": "Unauthorized"})
+		send(w, http.StatusUnauthorized, Json{"error": "Unauthorized"})
 		return false
 	}
 
@@ -27,14 +26,13 @@ func (s *Server) EnqueueHandler(w http.ResponseWriter, req *http.Request) {
 
 	value, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		send(w, Json{"error": err.Error()})
+		send(w, http.StatusInternalServerError, Json{"error": err.Error()})
 		return
 	}
 
 	record, err := s.App.Enqueue(params["queue"], value)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		send(w, Json{"error": "Enqueue failed"})
+		send(w, http.StatusInternalServerError, Json{"error": err.Error()})
 		return
 	}
 
@@ -47,22 +45,19 @@ func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
 
 	wait, err := Stod(req.URL.Query().Get("wait"), time.Second)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		send(w, Json{"error": "Invalid wait parameter"})
+		send(w, http.StatusBadRequest, Json{"error": "Invalid wait parameter"})
 		return
 	}
 
 	timeout, err := Stod(req.URL.Query().Get("timeout"), time.Second)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		send(w, Json{"error": "Invalid timeout parameter"})
+		send(w, http.StatusBadRequest, Json{"error": "Invalid timeout parameter"})
 		return
 	}
 
 	record, err := s.App.Dequeue(params["queue"], wait, timeout)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		send(w, Json{"error": "Dequeue failed"})
+		send(w, http.StatusInternalServerError, Json{"error": "Dequeue failed"})
 		return
 	}
 
@@ -79,15 +74,13 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		send(w, Json{"error": "Item not found"})
+		send(w, http.StatusNotFound, Json{"error": "Item not found"})
 		return
 	}
 
 	info, err := s.App.Info(params["queue"], id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		send(w, Json{"error": "Failed to read item"})
+		send(w, http.StatusInternalServerError, Json{"error": "Failed to read item"})
 		return
 	}
 
@@ -100,9 +93,7 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("X-Dequeued", dequeued)
 		w.Write(info.value)
 	} else {
-		w.WriteHeader(http.StatusNotFound)
-		send(w, Json{"error": "Item not found"})
-		return
+		send(w, http.StatusNotFound, Json{"error": "Item not found"})
 	}
 }
 
@@ -111,23 +102,20 @@ func (s *Server) CompleteHandler(w http.ResponseWriter, req *http.Request) {
 
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		send(w, Json{"error": "Item not found"})
+		send(w, http.StatusNotFound, Json{"error": "Item not found"})
 		return
 	}
 
 	ok, err := s.App.Complete(params["queue"], id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		send(w, Json{"error": "Complete failed"})
+		send(w, http.StatusInternalServerError, Json{"error": "Complete failed"})
 		return
 	}
 
 	if ok {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
-		w.WriteHeader(http.StatusBadRequest)
-		send(w, Json{"error": "Item not dequeued"})
+		send(w, http.StatusBadRequest, Json{"error": "Item not dequeued"})
 	}
 }
 
@@ -155,7 +143,7 @@ func Stod(val string, scale ...time.Duration) (time.Duration, error) {
 	return duration, nil
 }
 
-func send(w http.ResponseWriter, data Json) error {
+func send(w http.ResponseWriter, code int, data Json) error {
 	bytes, err := json.Marshal(data)
 
 	if err != nil {
@@ -163,7 +151,7 @@ func send(w http.ResponseWriter, data Json) error {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Foo", "bar")
+	w.WriteHeader(code)
 	w.Write(bytes)
 
 	return nil
