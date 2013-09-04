@@ -87,12 +87,18 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 	info, err := s.App.Info(params["queue"], id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		send(w, Json{"error": "Dequeue failed"})
+		send(w, Json{"error": "Failed to read item"})
 		return
 	}
 
 	if info != nil {
-		send(w, info)
+		dequeued := "false"
+		if info.dequeued {
+			dequeued = "true"
+		}
+
+		w.Header().Set("X-Dequeued", dequeued)
+		fmt.Fprintf(w, "%s", info.value)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		send(w, Json{"error": "Item not found"})

@@ -30,6 +30,11 @@ func NewQueue() *Queue {
 
 func (q *Queue) Enqueue(value int) {
 	item := NewItem(value)
+	q.EnqueueItem(item)
+}
+
+func (q *Queue) EnqueueItem(item *Item) {
+	item.dequeued = false
 
 	select {
 	case q.waiting <- item:
@@ -68,7 +73,7 @@ func (q *Queue) run() {
 }
 
 func (q *Queue) expire(item *Item) {
-	q.Enqueue(item.value)
+	q.EnqueueItem(item)
 }
 
 func (q *Queue) shift() *Item {

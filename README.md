@@ -37,11 +37,11 @@ off the head of the queue
 
 * `timeout=<sec>` - if the item is not completed (see endpoint below) within the specified number of seconds, the item will automatically be re-enqueued (when no timeout is specified the item is automatically completed when dequeued)
 
-**Info:**
+**Get:**
 
     $ curl -X GET http://localhost:5353/:queue/:id
 
-Get info about the specified item (i.e. whether it is currently dequeued and waiting for completion).
+Get a specific item.  The header `X-Dequeued` will be `true` if the item is currently dequeued and waiting for completion.
 
 **Complete:**
 

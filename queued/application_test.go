@@ -25,9 +25,8 @@ func TestApplication(t *testing.T) {
 	info, err := app.Info("test", 1)
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, info["id"], 1)
-	assert.Equal(t, info["queue"], "test")
-	assert.Equal(t, info["dequeued"], false)
+	assert.Equal(t, info.value, []byte("foo"))
+	assert.Equal(t, info.dequeued, false)
 
 	record, err = app.Dequeue("test", NilDuration, NilDuration)
 

@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+type Info struct {
+	value    []byte
+	dequeued bool
+}
+
 type Application struct {
 	store  *Store
 	queues map[string]*Queue
@@ -96,7 +101,7 @@ func (a *Application) Complete(name string, id int) (bool, error) {
 	return true, nil
 }
 
-func (a *Application) Info(name string, id int) (map[string]interface{}, error) {
+func (a *Application) Info(name string, id int) (*Info, error) {
 	record, err := a.store.Get(id)
 	if err != nil {
 		return nil, err
@@ -110,12 +115,7 @@ func (a *Application) Info(name string, id int) (map[string]interface{}, error) 
 	}
 
 	item, ok := a.items[id]
-
-	info := map[string]interface{}{
-		"id":       record.id,
-		"queue":    record.Queue,
-		"dequeued": ok && item.dequeued,
-	}
+	info := &Info{record.Value, ok && item.dequeued}
 
 	return info, nil
 }
