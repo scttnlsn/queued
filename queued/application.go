@@ -26,7 +26,11 @@ func NewApplication(store *Store) *Application {
 
 	for it.Valid() {
 		record := it.Record()
-		app.GetQueue(record.Queue).Enqueue(record.id)
+		queue := app.GetQueue(record.Queue)
+		item := queue.Enqueue(record.id)
+
+		app.items[item.value] = item
+
 		it.Next()
 	}
 
@@ -53,7 +57,8 @@ func (a *Application) Enqueue(name string, value []byte) (*Record, error) {
 		return nil, err
 	}
 
-	queue.Enqueue(record.id)
+	item := queue.Enqueue(record.id)
+	a.items[item.value] = item
 
 	return record, nil
 }
@@ -65,20 +70,13 @@ func (a *Application) Dequeue(name string, wait time.Duration, timeout time.Dura
 		return nil, nil
 	}
 
-	id := item.value
-
-	record, err := a.store.Get(id)
+	record, err := a.store.Get(item.value)
 	if err != nil {
 		return nil, err
 	}
 
-	if item.dequeued {
-		a.items[id] = item
-	} else {
-		err := a.store.Remove(id)
-		if err != nil {
-			return nil, err
-		}
+	if !item.dequeued {
+		a.Complete(name, item.value)
 	}
 
 	return record, nil
@@ -86,7 +84,7 @@ func (a *Application) Dequeue(name string, wait time.Duration, timeout time.Dura
 
 func (a *Application) Complete(name string, id int) (bool, error) {
 	item, ok := a.items[id]
-	if !ok {
+	if !ok || !item.dequeued {
 		return false, nil
 	}
 
@@ -95,8 +93,8 @@ func (a *Application) Complete(name string, id int) (bool, error) {
 		return false, err
 	}
 
-	delete(a.items, id)
 	item.Complete()
+	delete(a.items, id)
 
 	return true, nil
 }

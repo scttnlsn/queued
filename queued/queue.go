@@ -28,9 +28,10 @@ func NewQueue() *Queue {
 	return q
 }
 
-func (q *Queue) Enqueue(value int) {
+func (q *Queue) Enqueue(value int) *Item {
 	item := NewItem(value)
 	q.EnqueueItem(item)
+	return item
 }
 
 func (q *Queue) EnqueueItem(item *Item) {

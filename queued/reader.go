@@ -26,7 +26,11 @@ func (r *Reader) Send(item *Item) {
 
 func (r *Reader) Receive() *Item {
 	item := <-r.ch
-	r.Timeout(item)
+
+	if item != nil {
+		r.Timeout(item)
+	}
+
 	return item
 }
 
@@ -52,8 +56,10 @@ func (r *Reader) Timeout(item *Item) {
 		go func() {
 			select {
 			case <-time.After(r.timeout):
+				item.dequeued = false
 				r.expire(item)
 			case <-item.complete:
+				item.dequeued = false
 				return
 			}
 		}()
