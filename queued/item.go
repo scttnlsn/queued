@@ -14,6 +14,10 @@ func NewItem(value int) *Item {
 	}
 }
 
-func (i *Item) Complete() {
-	i.complete <- true
+func (item *Item) Complete() {
+	if !item.dequeued {
+		return
+	}
+
+	item.complete <- true
 }
