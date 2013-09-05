@@ -1,6 +1,7 @@
 package queued
 
 import (
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,8 @@ type Application struct {
 	store  *Store
 	queues map[string]*Queue
 	items  map[int]*Item
+	qmutex sync.Mutex
+	imutex sync.RWMutex
 }
 
 func NewApplication(store *Store) *Application {
@@ -38,6 +41,9 @@ func NewApplication(store *Store) *Application {
 }
 
 func (a *Application) GetQueue(name string) *Queue {
+	a.qmutex.Lock()
+	defer a.qmutex.Unlock()
+
 	queue, ok := a.queues[name]
 
 	if !ok {
@@ -46,6 +52,28 @@ func (a *Application) GetQueue(name string) *Queue {
 	}
 
 	return queue
+}
+
+func (a *Application) GetItem(id int) (*Item, bool) {
+	a.imutex.RLock()
+	defer a.imutex.RUnlock()
+
+	item, ok := a.items[id]
+	return item, ok
+}
+
+func (a *Application) PutItem(item *Item) {
+	a.imutex.Lock()
+	defer a.imutex.Unlock()
+
+	a.items[item.value] = item
+}
+
+func (a *Application) RemoveItem(id int) {
+	a.imutex.Lock()
+	defer a.imutex.Unlock()
+
+	delete(a.items, id)
 }
 
 func (a *Application) Enqueue(name string, value []byte) (*Record, error) {
@@ -58,7 +86,7 @@ func (a *Application) Enqueue(name string, value []byte) (*Record, error) {
 	}
 
 	item := queue.Enqueue(record.id)
-	a.items[item.value] = item
+	a.PutItem(item)
 
 	return record, nil
 }
@@ -94,7 +122,7 @@ func (a *Application) Complete(name string, id int) (bool, error) {
 	}
 
 	item.Complete()
-	delete(a.items, id)
+	a.RemoveItem(id)
 
 	return true, nil
 }
@@ -112,7 +140,7 @@ func (a *Application) Info(name string, id int) (*Info, error) {
 		return nil, nil
 	}
 
-	item, ok := a.items[id]
+	item, ok := a.GetItem(id)
 	info := &Info{record.Value, ok && item.dequeued}
 
 	return info, nil
