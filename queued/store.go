@@ -7,13 +7,15 @@ import (
 	"github.com/jmhodges/levigo"
 	"os"
 	"strconv"
+	"sync"
 )
 
 type Store struct {
-	path string
-	sync bool
-	db   *levigo.DB
-	id   int
+	path  string
+	sync  bool
+	db    *levigo.DB
+	id    int
+	mutex sync.Mutex
 }
 
 func NewStore(path string, sync bool) *Store {
@@ -73,6 +75,9 @@ func (s *Store) Get(id int) (*Record, error) {
 }
 
 func (s *Store) Put(record *Record) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	id := s.id + 1
 
 	var buf bytes.Buffer
@@ -97,6 +102,9 @@ func (s *Store) Put(record *Record) error {
 }
 
 func (s *Store) Remove(id int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(s.sync)
 	return s.db.Delete(wopts, key(id))
