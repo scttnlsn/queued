@@ -111,7 +111,8 @@ func (a *Application) Dequeue(name string, wait time.Duration, timeout time.Dura
 }
 
 func (a *Application) Complete(name string, id int) (bool, error) {
-	item, ok := a.items[id]
+	item, ok := a.GetItem(id)
+
 	if !ok || !item.dequeued {
 		return false, nil
 	}

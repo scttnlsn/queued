@@ -8,7 +8,6 @@ import (
 
 func TestQueue(t *testing.T) {
 	q := NewQueue()
-	defer q.Stop()
 
 	q.Enqueue(123)
 	q.Enqueue(456)
@@ -22,7 +21,6 @@ func TestQueue(t *testing.T) {
 
 func TestDequeueWait(t *testing.T) {
 	q := NewQueue()
-	defer q.Stop()
 
 	wait := time.Millisecond
 
@@ -35,12 +33,12 @@ func TestDequeueWait(t *testing.T) {
 	assert.T(t, one == nil)
 
 	two := q.Dequeue(time.Second, NilDuration)
+	assert.T(t, two != nil)
 	assert.Equal(t, two.value, 123)
 }
 
 func TestDequeueTimeout(t *testing.T) {
 	q := NewQueue()
-	defer q.Stop()
 
 	timeout := time.Millisecond
 
@@ -49,7 +47,7 @@ func TestDequeueTimeout(t *testing.T) {
 	one := q.Dequeue(NilDuration, timeout)
 	assert.T(t, one != nil)
 
-	time.Sleep(timeout)
+	time.Sleep(timeout * 2)
 
 	two := q.Dequeue(NilDuration, timeout)
 	assert.T(t, two != nil)
