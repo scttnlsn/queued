@@ -10,7 +10,6 @@ const NilDuration = time.Duration(-1)
 type Queue struct {
 	items   []*Item
 	waiting chan *Item
-	depth   int
 	mutex   sync.Mutex
 }
 
@@ -59,7 +58,6 @@ func (q *Queue) shift() *Item {
 	if len(q.items) > 0 {
 		item := q.items[0]
 		q.items = q.items[1:]
-		q.depth -= 1
 		return item
 	} else {
 		return nil
@@ -71,7 +69,6 @@ func (q *Queue) append(item *Item) {
 	defer q.mutex.Unlock()
 
 	q.items = append(q.items, item)
-	q.depth += 1
 }
 
 func (q *Queue) timeout(item *Item, timeout time.Duration) {
