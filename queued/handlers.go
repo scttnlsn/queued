@@ -97,6 +97,18 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (s *Server) StatsHandler(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	stats := s.App.Stats(params["queue"])
+
+	result := map[string]interface{}{}
+	for field, value := range stats {
+		result[field] = value
+	}
+
+	send(w, http.StatusOK, result)
+}
+
 func (s *Server) CompleteHandler(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 

@@ -41,6 +41,13 @@ func TestServer(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
+	// Stats
+	req, _ = http.NewRequest("GET", "/foo", nil)
+	w = httptest.NewRecorder()
+	s.ServeHTTP(w, req)
+
+	assert.Equal(t, w.Code, 200)
+
 	// Complete
 	req, _ = http.NewRequest("DELETE", "/foo/1", nil)
 	w = httptest.NewRecorder()

@@ -146,3 +146,8 @@ func (a *Application) Info(name string, id int) (*Info, error) {
 
 	return info, nil
 }
+
+func (a *Application) Stats(name string) map[string]int {
+	queue := a.GetQueue(name)
+	return queue.Stats()
+}

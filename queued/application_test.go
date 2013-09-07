@@ -22,6 +22,13 @@ func TestApplication(t *testing.T) {
 	assert.Equal(t, record.Value, []byte("foo"))
 	assert.Equal(t, record.Queue, "test")
 
+	stats := app.Stats("test")
+
+	assert.Equal(t, stats["enqueued"], 1)
+	assert.Equal(t, stats["dequeued"], 0)
+	assert.Equal(t, stats["depth"], 1)
+	assert.Equal(t, stats["timeouts"], 0)
+
 	info, err := app.Info("test", 1)
 
 	assert.Equal(t, err, nil)
