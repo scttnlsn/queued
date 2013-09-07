@@ -49,6 +49,12 @@ Get a specific item.  The header `X-Dequeued` will be `true` if the item is curr
 
 Complete the specified item and destroy it (note that only items dequeued with a timeout can be completed).
 
+**Stats:**
+
+    $ curl -X GET http://localhost:5353/:queue
+
+Get stats about a given queue.
+
 ## CLI Options
 
 * **-auth=""** - HTTP basic auth password required for all requests
