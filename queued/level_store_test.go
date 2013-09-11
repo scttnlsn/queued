@@ -6,7 +6,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	store := NewStore("./test1.db", true)
+	store := NewLevelStore("./test1.db", true)
 	defer store.Drop()
 
 	assert.Equal(t, store.id, 0)
@@ -32,43 +32,40 @@ func TestStore(t *testing.T) {
 }
 
 func TestStoreLoad(t *testing.T) {
-	temp := NewStore("./test2.db", true)
+	temp := NewLevelStore("./test2.db", true)
 	temp.Put(NewRecord([]byte("foo"), "testqueue"))
 	temp.Put(NewRecord([]byte("bar"), "testqueue"))
 	temp.Close()
 
-	store := NewStore("./test2.db", true)
+	store := NewLevelStore("./test2.db", true)
 	defer store.Drop()
 
 	assert.Equal(t, store.id, 2)
 }
 
 func TestStoreIterator(t *testing.T) {
-	temp := NewStore("./test3.db", true)
+	temp := NewLevelStore("./test3.db", true)
 	temp.Put(NewRecord([]byte("foo"), "testqueue"))
 	temp.Put(NewRecord([]byte("bar"), "testqueue"))
 	temp.Close()
 
-	store := NewStore("./test3.db", true)
+	store := NewLevelStore("./test3.db", true)
 	defer store.Drop()
 
 	it := store.Iterator()
 
-	assert.T(t, it.Valid())
-
-	one := it.Record()
+	one, ok := it.NextRecord()
+	assert.Equal(t, ok, true)
 	assert.Equal(t, one.id, 1)
 	assert.Equal(t, one.Value, []byte("foo"))
 	assert.Equal(t, one.Queue, "testqueue")
 
-	it.Next()
-
-	two := it.Record()
+	two, ok := it.NextRecord()
+	assert.Equal(t, ok, true)
 	assert.Equal(t, two.id, 2)
 	assert.Equal(t, two.Value, []byte("bar"))
 	assert.Equal(t, two.Queue, "testqueue")
 
-	it.Next()
-
-	assert.T(t, !it.Valid())
+	_, ok = it.NextRecord()
+	assert.Equal(t, ok, false)
 }

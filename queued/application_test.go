@@ -7,7 +7,7 @@ import (
 )
 
 func TestApplication(t *testing.T) {
-	store := NewStore("./test1.db", true)
+	store := NewLevelStore("./test1.db", true)
 	defer store.Drop()
 
 	app := NewApplication(store)
@@ -66,7 +66,7 @@ func TestApplication(t *testing.T) {
 }
 
 func TestNewApplication(t *testing.T) {
-	store := NewStore("./test2.db", true)
+	store := NewLevelStore("./test2.db", true)
 	defer store.Drop()
 
 	store.Put(NewRecord([]byte("foo"), "test"))

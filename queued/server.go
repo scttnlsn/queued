@@ -10,14 +10,14 @@ import (
 type Server struct {
 	Config *Config
 	Router *mux.Router
-	Store  *Store
+	Store  Store
 	App    *Application
 	Addr   string
 }
 
 func NewServer(config *Config) *Server {
 	router := mux.NewRouter()
-	store := NewStore(config.DbPath, config.Sync)
+	store := NewLevelStore(config.DbPath, config.Sync)
 	app := NewApplication(store)
 	addr := fmt.Sprintf(":%d", config.Port)
 

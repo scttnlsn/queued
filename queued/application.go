@@ -11,14 +11,14 @@ type Info struct {
 }
 
 type Application struct {
-	store  *Store
+	store  Store
 	queues map[string]*Queue
 	items  map[int]*Item
 	qmutex sync.Mutex
 	imutex sync.RWMutex
 }
 
-func NewApplication(store *Store) *Application {
+func NewApplication(store Store) *Application {
 	app := &Application{
 		store:  store,
 		queues: make(map[string]*Queue),
@@ -26,15 +26,14 @@ func NewApplication(store *Store) *Application {
 	}
 
 	it := store.Iterator()
+	record, ok := it.NextRecord()
 
-	for it.Valid() {
-		record := it.Record()
+	for ok {
 		queue := app.GetQueue(record.Queue)
 		item := queue.Enqueue(record.id)
-
 		app.items[item.value] = item
 
-		it.Next()
+		record, ok = it.NextRecord()
 	}
 
 	return app
