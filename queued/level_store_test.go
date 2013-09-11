@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestStore(t *testing.T) {
+func TestLevelStore(t *testing.T) {
 	store := NewLevelStore("./test1.db", true)
 	defer store.Drop()
 
@@ -31,7 +31,7 @@ func TestStore(t *testing.T) {
 	assert.T(t, record == nil)
 }
 
-func TestStoreLoad(t *testing.T) {
+func TestLevelStoreLoad(t *testing.T) {
 	temp := NewLevelStore("./test2.db", true)
 	temp.Put(NewRecord([]byte("foo"), "testqueue"))
 	temp.Put(NewRecord([]byte("bar"), "testqueue"))
@@ -43,7 +43,7 @@ func TestStoreLoad(t *testing.T) {
 	assert.Equal(t, store.id, 2)
 }
 
-func TestStoreIterator(t *testing.T) {
+func TestLevelStoreIterator(t *testing.T) {
 	temp := NewLevelStore("./test3.db", true)
 	temp.Put(NewRecord([]byte("foo"), "testqueue"))
 	temp.Put(NewRecord([]byte("bar"), "testqueue"))
