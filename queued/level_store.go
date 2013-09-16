@@ -58,6 +58,7 @@ type LevelStore struct {
 func NewLevelStore(path string, sync bool) *LevelStore {
 	opts := levigo.NewOptions()
 	opts.SetCreateIfMissing(true)
+	defer opts.Close()
 
 	db, err := levigo.Open(path, opts)
 	if err != nil {
@@ -87,6 +88,7 @@ func NewLevelStore(path string, sync bool) *LevelStore {
 
 func (s *LevelStore) Get(id int) (*Record, error) {
 	ropts := levigo.NewReadOptions()
+	defer ropts.Close()
 
 	value, err := s.db.Get(ropts, key(id))
 	if err != nil {
@@ -124,6 +126,7 @@ func (s *LevelStore) Put(record *Record) error {
 
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(s.sync)
+	defer wopts.Close()
 
 	err = s.db.Put(wopts, key(id), buf.Bytes())
 	if err != nil {
@@ -142,6 +145,8 @@ func (s *LevelStore) Remove(id int) error {
 
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(s.sync)
+	defer wopts.Close()
+
 	return s.db.Delete(wopts, key(id))
 }
 
