@@ -58,9 +58,10 @@ Get stats about a given queue.
 ## CLI Options
 
 * **-auth=""** - HTTP basic auth password required for all requests
-* **-db-path="./queued.db"** - the directory in which queue items will be persisted
+* **-db-path="./queued.db"** - the directory in which queue items will be persisted (n/a for memory store)
 * **-port=5353** - port on which to listen
-* **-sync=true** - boolean indicating whether data should be synced to disk after every write (see LevelDB's `WriteOptions::sync`)
+* **-store=leveldb** - the backend in which items will be stored (`leveldb` or `memory`)
+* **-sync=true** - boolean indicating whether data should be synced to disk after every write (n/a for memory store, see LevelDB's `WriteOptions::sync`)
 
 ## Client Libraries
 
