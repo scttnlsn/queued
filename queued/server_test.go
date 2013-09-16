@@ -9,7 +9,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	s := NewServer(&Config{DbPath: "./server1"})
+	s := NewServer(&Config{DbPath: "./server1", Store: "memory"})
 	defer s.Store.Drop()
 
 	// Enqueue
@@ -64,7 +64,7 @@ func TestServer(t *testing.T) {
 }
 
 func TestServerAuth(t *testing.T) {
-	s := NewServer(&Config{DbPath: "./server2", Auth: "secret"})
+	s := NewServer(&Config{DbPath: "./server2", Auth: "secret", Store: "memory"})
 	defer s.Store.Drop()
 
 	body := strings.NewReader("bar")

@@ -23,7 +23,7 @@ func (it *LevelIterator) NextRecord() (*Record, bool) {
 
 	id, err := strconv.Atoi(string(it.Key()))
 	if err != nil {
-		panic(fmt.Sprintf("queued: Error loading db: %v", err))
+		panic(fmt.Sprintf("queued.LevelIterator: Error loading db: %v", err))
 	}
 
 	value := it.Value()
