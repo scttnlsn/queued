@@ -6,7 +6,8 @@ all: build/queued
 build:
 	mkdir build
 
-build/queued: build
+build/queued: build $(wildcard queued.go queued/*.go)
+	go get -d
 	go build -o build/queued
 
 clean:

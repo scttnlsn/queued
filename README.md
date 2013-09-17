@@ -6,9 +6,8 @@ Simple HTTP-based queue server
 
 **Install:**
 
-Ensure Go and LevelDB are installed and then run:
+Ensure [Go](http://golang.org/) and [LevelDB](https://code.google.com/p/leveldb/) are installed and then run:
 
-    $ go get
     $ make
     $ sudo make install
 
