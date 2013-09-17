@@ -15,6 +15,7 @@ func TestServer(t *testing.T) {
 	// Enqueue
 	body := strings.NewReader("bar")
 	req, _ := http.NewRequest("POST", "/foo", body)
+	req.Header.Add("Content-Type", "text/plain")
 	w := httptest.NewRecorder()
 	s.ServeHTTP(w, req)
 
@@ -33,6 +34,7 @@ func TestServer(t *testing.T) {
 	s.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)
+	assert.Equal(t, w.Header().Get("Content-Type"), "text/plain")
 
 	// Dequeue
 	req, _ = http.NewRequest("POST", "/foo/dequeue?wait=30&timeout=30", nil)
@@ -40,6 +42,7 @@ func TestServer(t *testing.T) {
 	s.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)
+	assert.Equal(t, w.Header().Get("Content-Type"), "text/plain")
 
 	// Stats
 	req, _ = http.NewRequest("GET", "/foo", nil)

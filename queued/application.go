@@ -6,7 +6,7 @@ import (
 )
 
 type Info struct {
-	value    []byte
+	record   *Record
 	dequeued bool
 }
 
@@ -75,9 +75,10 @@ func (a *Application) RemoveItem(id int) {
 	delete(a.items, id)
 }
 
-func (a *Application) Enqueue(name string, value []byte) (*Record, error) {
+func (a *Application) Enqueue(name string, value []byte, mime string) (*Record, error) {
 	queue := a.GetQueue(name)
 	record := NewRecord(value, name)
+	record.Mime = mime
 
 	err := a.store.Put(record)
 	if err != nil {
@@ -141,7 +142,7 @@ func (a *Application) Info(name string, id int) (*Info, error) {
 	}
 
 	item, ok := a.GetItem(id)
-	info := &Info{record.Value, ok && item.dequeued}
+	info := &Info{record, ok && item.dequeued}
 
 	return info, nil
 }

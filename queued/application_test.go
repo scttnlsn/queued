@@ -15,7 +15,7 @@ func TestApplication(t *testing.T) {
 	assert.Equal(t, app.GetQueue("test"), app.GetQueue("test"))
 	assert.NotEqual(t, app.GetQueue("test"), app.GetQueue("foobar"))
 
-	record, err := app.Enqueue("test", []byte("foo"))
+	record, err := app.Enqueue("test", []byte("foo"), "")
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, record.id, 1)
@@ -32,7 +32,7 @@ func TestApplication(t *testing.T) {
 	info, err := app.Info("test", 1)
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, info.value, []byte("foo"))
+	assert.Equal(t, info.record.Value, []byte("foo"))
 	assert.Equal(t, info.dequeued, false)
 
 	record, err = app.Dequeue("test", NilDuration, NilDuration)
@@ -47,7 +47,7 @@ func TestApplication(t *testing.T) {
 	assert.Equal(t, err, nil)
 	assert.Equal(t, ok, false)
 
-	app.Enqueue("test", []byte("bar"))
+	app.Enqueue("test", []byte("bar"), "")
 	record, err = app.Dequeue("test", NilDuration, time.Millisecond)
 
 	assert.Equal(t, err, nil)

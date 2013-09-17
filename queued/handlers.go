@@ -30,7 +30,8 @@ func (s *Server) EnqueueHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := s.App.Enqueue(params["queue"], value)
+	mime := req.Header.Get("Content-Type")
+	record, err := s.App.Enqueue(params["queue"], value, mime)
 	if err != nil {
 		send(w, http.StatusInternalServerError, Json{"error": err.Error()})
 		return
@@ -63,6 +64,7 @@ func (s *Server) DequeueHandler(w http.ResponseWriter, req *http.Request) {
 
 	if record != nil {
 		w.Header().Set("Location", url(req, record))
+		w.Header().Set("Content-Type", record.ContentType())
 		w.Write(record.Value)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
@@ -91,7 +93,8 @@ func (s *Server) InfoHandler(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("X-Dequeued", dequeued)
-		w.Write(info.value)
+		w.Header().Set("Content-Type", info.record.ContentType())
+		w.Write(info.record.Value)
 	} else {
 		send(w, http.StatusNotFound, Json{"error": "Item not found"})
 	}
