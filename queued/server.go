@@ -32,12 +32,8 @@ func NewServer(config *Config) *Server {
 	return s
 }
 
-func (s *Server) HandleFunc(route string, fn func(http.ResponseWriter, *http.Request)) *mux.Route {
-	return s.Router.HandleFunc(route, func(w http.ResponseWriter, req *http.Request) {
-		if ok := s.BeforeHandler(w, req); ok {
-			fn(w, req)
-		}
-	})
+func (s *Server) HandleFunc(route string, fn http.HandlerFunc) *mux.Route {
+	return s.Router.Handle(route, auth(s.Config, fn))
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {

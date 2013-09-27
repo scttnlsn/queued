@@ -12,15 +12,6 @@ import (
 	"time"
 )
 
-func (s *Server) BeforeHandler(w http.ResponseWriter, req *http.Request) bool {
-	if ok := auth(req, s.Config); !ok {
-		send(w, http.StatusUnauthorized, Json{"error": "Unauthorized"})
-		return false
-	}
-
-	return true
-}
-
 func (s *Server) EnqueueHandler(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 
@@ -172,32 +163,40 @@ func send(w http.ResponseWriter, code int, data Json) error {
 	return nil
 }
 
-func auth(req *http.Request, config *Config) bool {
-	if config.Auth == "" {
-		return true
+func auth(config *Config, next http.Handler) http.Handler {
+	unauthorized := func(w http.ResponseWriter) {
+		send(w, http.StatusUnauthorized, Json{"error": "Unauthorized"})
 	}
 
-	s := strings.SplitN(req.Header.Get("Authorization"), " ", 2)
-	if len(s) != 2 || s[0] != "Basic" {
-		return false
-	}
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if config.Auth != "" {
+			s := strings.SplitN(req.Header.Get("Authorization"), " ", 2)
+			if len(s) != 2 || s[0] != "Basic" {
+				unauthorized(w)
+				return
+			}
 
-	base, err := base64.StdEncoding.DecodeString(s[1])
-	if err != nil {
-		return false
-	}
+			base, err := base64.StdEncoding.DecodeString(s[1])
+			if err != nil {
+				unauthorized(w)
+				return
+			}
 
-	pair := strings.SplitN(string(base), ":", 2)
-	if len(pair) != 2 {
-		return false
-	}
+			pair := strings.SplitN(string(base), ":", 2)
+			if len(pair) != 2 {
+				unauthorized(w)
+				return
+			}
 
-	password := pair[1]
-	if config.Auth != password {
-		return false
-	}
+			password := pair[1]
+			if config.Auth != password {
+				unauthorized(w)
+				return
+			}
+		}
 
-	return true
+		next.ServeHTTP(w, req)
+	})
 }
 
 func url(req *http.Request, record *Record) string {
