@@ -121,7 +121,7 @@ func (s *Server) CompleteHandler(w http.ResponseWriter, req *http.Request) {
 	if ok {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
-		send(w, http.StatusBadRequest, Json{"error": "Item not dequeued"})
+		send(w, http.StatusBadRequest, Json{"error": "Item not dequeued with timeout"})
 	}
 }
 
