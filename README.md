@@ -65,3 +65,4 @@ Get stats about a given queue.
 ## Client Libraries
 
 * [Node.js](http://github.com/scttnlsn/node-queued)
+* [Ruby](http://github.com/scttnlsn/queued-ruby)
