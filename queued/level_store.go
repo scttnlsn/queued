@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/jmhodges/levigo"
+	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"os"
 	"strconv"
 	"sync"
@@ -13,7 +15,7 @@ import (
 // Iterator
 
 type LevelIterator struct {
-	*levigo.Iterator
+	iterator.Iterator
 }
 
 func (it *LevelIterator) NextRecord() (*Record, bool) {
@@ -50,28 +52,23 @@ func (it *LevelIterator) NextRecord() (*Record, bool) {
 type LevelStore struct {
 	path  string
 	sync  bool
-	db    *levigo.DB
+	db    *leveldb.DB
 	id    int
 	mutex sync.Mutex
 }
 
 func NewLevelStore(path string, sync bool) *LevelStore {
-	opts := levigo.NewOptions()
-	opts.SetCreateIfMissing(true)
-	defer opts.Close()
-
-	db, err := levigo.Open(path, opts)
+	db, err := leveldb.OpenFile(path, &opt.Options{Flag: opt.OFCreateIfMissing})
 	if err != nil {
 		panic(fmt.Sprintf("queued.LevelStore: Unable to open db: %v", err))
 	}
 
 	id := 0
 
-	it := db.NewIterator(levigo.NewReadOptions())
-	defer it.Close()
+	it := db.NewIterator(&opt.ReadOptions{})
+	defer it.Release()
 
-	it.SeekToLast()
-	if it.Valid() {
+	if it.Last() && it.Valid() {
 		id, err = strconv.Atoi(string(it.Key()))
 		if err != nil {
 			panic(fmt.Sprintf("queued.LevelStore: Error loading db: %v", err))
@@ -87,12 +84,13 @@ func NewLevelStore(path string, sync bool) *LevelStore {
 }
 
 func (s *LevelStore) Get(id int) (*Record, error) {
-	ropts := levigo.NewReadOptions()
-	defer ropts.Close()
-
-	value, err := s.db.Get(ropts, key(id))
+	value, err := s.db.Get(key(id), &opt.ReadOptions{})
 	if err != nil {
-		return nil, err
+		if err == leveldb.ErrNotFound {
+			return nil, nil
+		} else {
+			return nil, err
+		}
 	}
 	if value == nil {
 		return nil, nil
@@ -124,11 +122,9 @@ func (s *LevelStore) Put(record *Record) error {
 		panic(fmt.Sprintf("queued.LevelStore: Error encoding record: %v", err))
 	}
 
-	wopts := levigo.NewWriteOptions()
-	wopts.SetSync(s.sync)
-	defer wopts.Close()
+	wopts := &opt.WriteOptions{Flag: opt.WFSync}
 
-	err = s.db.Put(wopts, key(id), buf.Bytes())
+	err = s.db.Put(key(id), buf.Bytes(), wopts)
 	if err != nil {
 		return err
 	}
@@ -143,11 +139,9 @@ func (s *LevelStore) Remove(id int) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	wopts := levigo.NewWriteOptions()
-	wopts.SetSync(s.sync)
-	defer wopts.Close()
+	wopts := &opt.WriteOptions{Flag: opt.WFSync}
 
-	return s.db.Delete(wopts, key(id))
+	return s.db.Delete(key(id), wopts)
 }
 
 func (s *LevelStore) Close() {
@@ -164,8 +158,8 @@ func (s *LevelStore) Drop() {
 }
 
 func (s *LevelStore) Iterator() Iterator {
-	it := s.db.NewIterator(levigo.NewReadOptions())
-	it.SeekToFirst()
+	it := s.db.NewIterator(&opt.ReadOptions{})
+	it.First()
 	return &LevelIterator{it}
 }
 
