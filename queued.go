@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./queued"
 	"flag"
 	"fmt"
+	"github.com/scttnlsn/queued/queued"
 	"runtime"
 )
 
