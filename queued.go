@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/scttnlsn/queued/queued"
+	"os"
 	"runtime"
 )
 
@@ -20,7 +21,14 @@ func init() {
 }
 
 func main() {
+	version := flag.Bool("v", false, "output the version number")
+
 	flag.Parse()
+
+	if *version {
+		fmt.Println(queued.Version)
+		os.Exit(0)
+	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 

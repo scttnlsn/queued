@@ -61,6 +61,7 @@ Get stats about a given queue.
 * **-port=5353** - port on which to listen
 * **-store=leveldb** - the backend in which items will be stored (`leveldb` or `memory`)
 * **-sync=true** - boolean indicating whether data should be synced to disk after every write (n/a for memory store, see LevelDB's `WriteOptions::sync`)
+* **-v** - output the version number
 
 ## Client Libraries
 
