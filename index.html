@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Queued by scttnlsn</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Queued</h1>
+        <p>Simple HTTP-based queue server</p>
+
+        <p class="view"><a href="https://github.com/scttnlsn/queued">View the Project on GitHub <small>scttnlsn/queued</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/scttnlsn/queued/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/scttnlsn/queued/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/scttnlsn/queued">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="queued" class="anchor" href="#queued"><span class="octicon octicon-link"></span></a>queued</h1>
+
+<p>Simple HTTP-based queue server</p>
+
+<h2>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<p><strong>Install:</strong></p>
+
+<p>Ensure <a href="http://golang.org/">Go</a> and <a href="https://code.google.com/p/leveldb/">LevelDB</a> are installed and then run:</p>
+
+<pre><code>$ make
+$ sudo make install
+</code></pre>
+
+<p><strong>Run:</strong></p>
+
+<pre><code>$ queued [options]
+</code></pre>
+
+<h2>
+<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>API</h2>
+
+<p><strong>Enqueue:</strong></p>
+
+<pre><code>$ curl -X POST http://localhost:5353/:queue -d 'foo'
+</code></pre>
+
+<p>Append the POSTed data to the end of the specified queue (note that queues are created on-the-fly).  The <code>Location</code> header will point to the enqueued item and is of the form <code>http://localhost:5353/:queue/:id</code>.</p>
+
+<p><strong>Dequeue:</strong></p>
+
+<pre><code>$ curl -X POST http://localhost:5353/:queue/dequeue
+</code></pre>
+
+<p>Dequeue the item currently on the head of the queue.  Guaranteed not to return the same item twice unless a completion timeout is specified (see below).  The <code>Location</code> header will point to the dequeued item and is of the form <code>http://localhost:5353/:queue/:id</code>.  Queued message data is returned in the response body.</p>
+
+<p>Dequeue optionally takes <code>wait</code> and/or <code>timeout</code> query string parameters:</p>
+
+<ul>
+<li><p><code>wait=&lt;sec&gt;</code> - block for the specified number of seconds or until there is an item to be read
+off the head of the queue</p></li>
+<li><p><code>timeout=&lt;sec&gt;</code> - if the item is not completed (see endpoint below) within the specified number of seconds, the item will automatically be re-enqueued (when no timeout is specified the item is automatically completed when dequeued)</p></li>
+</ul><p><strong>Get:</strong></p>
+
+<pre><code>$ curl -X GET http://localhost:5353/:queue/:id
+</code></pre>
+
+<p>Get a specific item.  The header <code>X-Dequeued</code> will be <code>true</code> if the item is currently dequeued and waiting for completion.</p>
+
+<p><strong>Complete:</strong></p>
+
+<pre><code>$ curl -X DELETE http://localhost:5353/:queue/:id
+</code></pre>
+
+<p>Complete the specified item and destroy it (note that only items dequeued with a timeout can be completed).</p>
+
+<p><strong>Stats:</strong></p>
+
+<pre><code>$ curl -X GET http://localhost:5353/:queue
+</code></pre>
+
+<p>Get stats about a given queue.</p>
+
+<h2>
+<a name="cli-options" class="anchor" href="#cli-options"><span class="octicon octicon-link"></span></a>CLI Options</h2>
+
+<ul>
+<li>
+<strong>-auth=""</strong> - HTTP basic auth password required for all requests</li>
+<li>
+<strong>-db-path="./queued.db"</strong> - the directory in which queue items will be persisted (n/a for memory store)</li>
+<li>
+<strong>-port=5353</strong> - port on which to listen</li>
+<li>
+<strong>-store=leveldb</strong> - the backend in which items will be stored (<code>leveldb</code> or <code>memory</code>)</li>
+<li>
+<strong>-sync=true</strong> - boolean indicating whether data should be synced to disk after every write (n/a for memory store, see LevelDB's <code>WriteOptions::sync</code>)</li>
+<li>
+<strong>-v</strong> - output the version number</li>
+</ul><h2>
+<a name="client-libraries" class="anchor" href="#client-libraries"><span class="octicon octicon-link"></span></a>Client Libraries</h2>
+
+<ul>
+<li><a href="http://github.com/scttnlsn/node-queued">Node.js</a></li>
+<li><a href="http://github.com/scttnlsn/queued-ruby">Ruby</a></li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/scttnlsn">scttnlsn</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
