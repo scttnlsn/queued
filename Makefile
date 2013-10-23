@@ -21,6 +21,7 @@ uninstall:
 	rm ${BINDIR}/queued
 
 test:
+	go get -d
 	cd queued; go test
 
 .PHONY: install uninstall clean all test
