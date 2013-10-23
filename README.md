@@ -2,6 +2,8 @@
 
 Simple HTTP-based queue server
 
+[![Build Status](https://travis-ci.org/scttnlsn/queued.png?branch=master)](https://travis-ci.org/scttnlsn/queued)
+
 ## Getting Started
 
 **Install:**
