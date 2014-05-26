@@ -30,7 +30,7 @@ func NewApplication(store Store) *Application {
 
 	for ok {
 		queue := app.GetQueue(record.Queue)
-		item := queue.Enqueue(record.id)
+		item := queue.Enqueue(record.Id)
 		app.items[item.value] = item
 
 		record, ok = it.NextRecord()
@@ -85,7 +85,7 @@ func (a *Application) Enqueue(name string, value []byte, mime string) (*Record, 
 		return nil, err
 	}
 
-	item := queue.Enqueue(record.id)
+	item := queue.Enqueue(record.Id)
 	a.PutItem(item)
 
 	return record, nil

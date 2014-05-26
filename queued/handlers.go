@@ -200,5 +200,5 @@ func auth(config *Config, next http.Handler) http.Handler {
 }
 
 func url(req *http.Request, record *Record) string {
-	return fmt.Sprintf("http://%s/%s/%d", req.Host, record.Queue, record.id)
+	return fmt.Sprintf("http://%s/%s/%d", req.Host, record.Queue, record.Id)
 }

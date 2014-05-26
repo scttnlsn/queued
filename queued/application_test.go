@@ -18,7 +18,7 @@ func TestApplication(t *testing.T) {
 	record, err := app.Enqueue("test", []byte("foo"), "")
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 	assert.Equal(t, record.Value, []byte("foo"))
 	assert.Equal(t, record.Queue, "test")
 
@@ -39,7 +39,7 @@ func TestApplication(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 	assert.T(t, record != nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 	assert.Equal(t, record.Value, []byte("foo"))
 	assert.Equal(t, record.Queue, "test")
 
@@ -52,7 +52,7 @@ func TestApplication(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 	assert.T(t, record != nil)
-	assert.Equal(t, record.id, 2)
+	assert.Equal(t, record.Id, 2)
 	assert.Equal(t, record.Value, []byte("bar"))
 	assert.Equal(t, record.Queue, "test")
 
@@ -76,14 +76,14 @@ func TestNewApplication(t *testing.T) {
 	app := NewApplication(store)
 
 	one, _ := app.Dequeue("test", NilDuration, NilDuration)
-	assert.Equal(t, one.id, 1)
+	assert.Equal(t, one.Id, 1)
 	assert.Equal(t, one.Value, []byte("foo"))
 
 	two, _ := app.Dequeue("test", NilDuration, NilDuration)
-	assert.Equal(t, two.id, 2)
+	assert.Equal(t, two.Id, 2)
 	assert.Equal(t, two.Value, []byte("bar"))
 
 	three, _ := app.Dequeue("another", NilDuration, NilDuration)
-	assert.Equal(t, three.id, 3)
+	assert.Equal(t, three.Id, 3)
 	assert.Equal(t, three.Value, []byte("baz"))
 }
