@@ -34,9 +34,9 @@ func (s *MemoryStore) Get(id int) (*Record, error) {
 }
 
 func (s *MemoryStore) Put(record *Record) error {
-	record.id = s.id + 1
-	s.records[record.id] = record
-	s.id = record.id
+	record.Id = s.id + 1
+	s.records[record.Id] = record
+	s.id = record.Id
 	return nil
 }
 

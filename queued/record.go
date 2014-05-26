@@ -1,7 +1,7 @@
 package queued
 
 type Record struct {
-	id    int
+	Id    int
 	Value []byte
 	Mime  string
 	Queue string
@@ -9,7 +9,7 @@ type Record struct {
 
 func NewRecord(value []byte, queue string) *Record {
 	return &Record{
-		id:    0,
+		Id:    0,
 		Value: value,
 		Mime:  "",
 		Queue: queue,

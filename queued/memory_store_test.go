@@ -15,11 +15,11 @@ func TestMemoryStore(t *testing.T) {
 
 	err := store.Put(record)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 
 	record, err = store.Get(1)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 	assert.Equal(t, record.Value, []byte("foo"))
 	assert.Equal(t, record.Queue, "testqueue")
 

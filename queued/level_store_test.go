@@ -15,11 +15,11 @@ func TestLevelStore(t *testing.T) {
 
 	err := store.Put(record)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 
 	record, err = store.Get(1)
 	assert.Equal(t, err, nil)
-	assert.Equal(t, record.id, 1)
+	assert.Equal(t, record.Id, 1)
 	assert.Equal(t, record.Value, []byte("foo"))
 	assert.Equal(t, record.Queue, "testqueue")
 
@@ -56,13 +56,13 @@ func TestLevelStoreIterator(t *testing.T) {
 
 	one, ok := it.NextRecord()
 	assert.Equal(t, ok, true)
-	assert.Equal(t, one.id, 1)
+	assert.Equal(t, one.Id, 1)
 	assert.Equal(t, one.Value, []byte("foo"))
 	assert.Equal(t, one.Queue, "testqueue")
 
 	two, ok := it.NextRecord()
 	assert.Equal(t, ok, true)
-	assert.Equal(t, two.id, 2)
+	assert.Equal(t, two.Id, 2)
 	assert.Equal(t, two.Value, []byte("bar"))
 	assert.Equal(t, two.Queue, "testqueue")
 

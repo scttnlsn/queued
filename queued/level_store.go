@@ -39,7 +39,7 @@ func (it *LevelIterator) NextRecord() (*Record, bool) {
 		panic(fmt.Sprintf("queued.LevelIterator: Error decoding value: %v", err))
 	}
 
-	record.id = id
+	record.Id = id
 
 	it.Next()
 	return &record, true
@@ -106,7 +106,7 @@ func (s *LevelStore) Get(id int) (*Record, error) {
 		panic(fmt.Sprintf("queued.LevelStore: Error decoding value: %v", err))
 	}
 
-	record.id = id
+	record.Id = id
 
 	return &record, nil
 }
@@ -133,7 +133,7 @@ func (s *LevelStore) Put(record *Record) error {
 		return err
 	}
 
-	record.id = id
+	record.Id = id
 	s.id = id
 
 	return nil
