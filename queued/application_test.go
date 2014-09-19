@@ -1,9 +1,11 @@
 package queued
 
 import (
-	"github.com/bmizerany/assert"
+	"strconv"
 	"testing"
 	"time"
+
+	"github.com/bmizerany/assert"
 )
 
 func TestApplication(t *testing.T) {
@@ -86,4 +88,53 @@ func TestNewApplication(t *testing.T) {
 	three, _ := app.Dequeue("another", NilDuration, NilDuration)
 	assert.Equal(t, three.Id, 3)
 	assert.Equal(t, three.Value, []byte("baz"))
+}
+
+func BenchmarkSmallQueue(b *testing.B) {
+	store := NewLevelStore("./bench1.db", true)
+	defer store.Drop()
+	app := NewApplication(store)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		app.Enqueue("test", []byte(strconv.Itoa(i)), "")
+	}
+}
+
+func BenchmarkSmallDequeue(b *testing.B) {
+	store := NewLevelStore("./bench2.db", true)
+	defer store.Drop()
+	app := NewApplication(store)
+	for i := 0; i < b.N; i++ {
+		app.Enqueue("test", []byte(strconv.Itoa(i)), "")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		app.Dequeue("test", NilDuration, NilDuration)
+	}
+}
+
+var testValue = []byte(`{ "glossary": { "title": "example glossary", "GlossDiv": { "title": "S", "GlossList": { "GlossEntry": { "ID": "SGML", "SortAs": "SGML", "GlossTerm": "Standard Generalized Markup Language", "Acronym": "SGML", "Abbrev": "ISO 8879:1986", "GlossDef": { "para": "A meta-markup language, used to create markup languages such as DocBook.", "GlossSeeAlso": ["GML", "XML"] }, "GlossSee": "markup" } } } } }`)
+
+func BenchmarkQueue(b *testing.B) {
+	store := NewLevelStore("./bench1.db", true)
+	defer store.Drop()
+	app := NewApplication(store)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		app.Enqueue("test", testValue, "")
+	}
+
+}
+
+func BenchmarkDequeue(b *testing.B) {
+	store := NewLevelStore("./bench2.db", true)
+	defer store.Drop()
+	app := NewApplication(store)
+	for i := 0; i < b.N; i++ {
+		app.Enqueue("test", testValue, "")
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		app.Dequeue("test", NilDuration, NilDuration)
+	}
 }

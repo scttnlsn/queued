@@ -1,10 +1,11 @@
-// +build !use_goleveldb
+// +build use_goleveldb
 
 package queued
 
 import (
-	"github.com/bmizerany/assert"
 	"testing"
+
+	"github.com/bmizerany/assert"
 )
 
 func TestLevelStore(t *testing.T) {
