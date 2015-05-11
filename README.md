@@ -68,4 +68,5 @@ Get stats about a given queue.
 ## Client Libraries
 
 * [Node.js](http://github.com/scttnlsn/node-queued)
+* [Python](http://github.com/miku/pyqueued)
 * [Ruby](http://github.com/scttnlsn/queued-ruby)
