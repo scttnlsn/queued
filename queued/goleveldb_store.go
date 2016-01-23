@@ -11,10 +11,10 @@ import (
 	"sync"
 
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	leveldb_iterator "github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 // Iterator
@@ -93,7 +93,7 @@ func NewLevelStore(path string, sync bool) *LevelStore {
 
 func (s *LevelStore) Get(id int) (*Record, error) {
 	value, err := s.db.Get(key(id), nil)
-	if err == util.ErrNotFound {
+	if err == errors.ErrNotFound {
 		return nil, nil
 	}
 	if err != nil {
