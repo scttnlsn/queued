@@ -46,9 +46,8 @@ func (q *Queue) EnqueueItem(item *Item) {
 }
 
 func (q *Queue) Dequeue(wait time.Duration, timeout time.Duration) *Item {
-	q.stats.Inc("dequeued")
-
 	if item := q.shift(); item != nil {
+		q.stats.Inc("dequeued")
 		q.timeout(item, timeout)
 		return item
 	} else if wait != NilDuration {
@@ -56,6 +55,7 @@ func (q *Queue) Dequeue(wait time.Duration, timeout time.Duration) *Item {
 		case <-time.After(wait):
 			return nil
 		case item := <-q.waiting:
+			q.stats.Inc("dequeued")
 			q.timeout(item, timeout)
 			return item
 		}
