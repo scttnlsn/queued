@@ -1,5 +1,9 @@
 package queued
 
+import (
+	"sync"
+)
+
 // Iterator
 
 type MemoryIterator struct {
@@ -14,6 +18,7 @@ func (it *MemoryIterator) NextRecord() (*Record, bool) {
 type MemoryStore struct {
 	id      int
 	records map[int]*Record
+	mutex   sync.Mutex
 }
 
 func NewMemoryStore() *MemoryStore {
@@ -26,6 +31,9 @@ func NewMemoryStore() *MemoryStore {
 }
 
 func (s *MemoryStore) Get(id int) (*Record, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	if record, ok := s.records[id]; ok {
 		return record, nil
 	} else {
@@ -34,6 +42,9 @@ func (s *MemoryStore) Get(id int) (*Record, error) {
 }
 
 func (s *MemoryStore) Put(record *Record) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	record.Id = s.id + 1
 	s.records[record.Id] = record
 	s.id = record.Id
@@ -41,6 +52,9 @@ func (s *MemoryStore) Put(record *Record) error {
 }
 
 func (s *MemoryStore) Remove(id int) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	delete(s.records, id)
 	return nil
 }

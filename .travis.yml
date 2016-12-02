@@ -3,9 +3,9 @@ go: 1.1
 script: make test
 before_install:
   - cd
-  - wget https://leveldb.googlecode.com/files/leveldb-1.10.0.tar.gz
-  - tar xzf leveldb-1.10.0.tar.gz
-  - cd leveldb-1.10.0
+  - wget https://github.com/google/leveldb/archive/v1.10.tar.gz
+  - tar xzf v1.10.tar.gz
+  - cd leveldb-1.10
   - make
   - export CGO_CFLAGS="-I`pwd`/include"
   - export CGO_LDFLAGS="-L`pwd`"
