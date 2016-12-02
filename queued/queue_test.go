@@ -91,4 +91,20 @@ func TestStats(t *testing.T) {
 	assert.Equal(t, q.Stats()["dequeued"], 3)
 	assert.Equal(t, q.Stats()["depth"], 1)
 	assert.Equal(t, q.Stats()["timeouts"], 1)
+
+	three := q.Dequeue(NilDuration, NilDuration)
+	assert.Equal(t, three.value, 789)
+
+	assert.Equal(t, q.Stats()["enqueued"], 4)
+	assert.Equal(t, q.Stats()["dequeued"], 4)
+	assert.Equal(t, q.Stats()["depth"], 0)
+	assert.Equal(t, q.Stats()["timeouts"], 1)
+
+	four := q.Dequeue(NilDuration, NilDuration)
+	assert.Equal(t, four, (*Item)(nil))
+
+	assert.Equal(t, q.Stats()["enqueued"], 4)
+	assert.Equal(t, q.Stats()["dequeued"], 4)
+	assert.Equal(t, q.Stats()["depth"], 0)
+	assert.Equal(t, q.Stats()["timeouts"], 1)
 }
